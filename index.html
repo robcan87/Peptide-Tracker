@@ -172,7 +172,7 @@
 <div class="wrap">
   <header class="app">
     <h1>Peptide Tracker<span class="dot">.</span></h1>
-    <div class="sub">Local · Private</div>
+    <div class="sub">Local · Private · <span id="verTag"></span></div>
   </header>
 
   <div class="tabs">
@@ -283,6 +283,11 @@
 
 <script>
 "use strict";
+window.addEventListener("error", function(e){
+  var t=document.getElementById("toast");
+  if(t){ t.textContent="JS error: "+(e.message||"unknown"); t.classList.add("show"); }
+});
+const APP_VERSION = "v3";
 const STORE_KEY = "peptideTracker.v1";
 const $ = id => document.getElementById(id);
 
@@ -402,31 +407,33 @@ $("dlgSave").onclick = ()=>{
   toast(i>=0?"Saved":"Peptide added");
 };
 
-/* ---------- list actions (delegated, robust on iOS) ---------- */
+/* ---------- list actions (robust on iOS) ---------- */
 function handleAction(btn){
-  const id = btn.dataset.id;
-  const p = peptides.find(x=>x.id===id);
-  if(!p) return;
-  const act = btn.dataset.act;
-  if(act==="edit"){ openDialog(p); }
-  else if(act==="dose"){
-    p.last = localISO(today0());
-    save(peptides);
-    renderSchedule();
-    const card = document.querySelector(`[data-card="${id}"]`);
-    if(card){ card.classList.add("flash"); setTimeout(()=>card.classList.remove("flash"),700); }
-    toast("Dose logged today");
-  } else if(act==="del"){
-    if(confirm(`Delete ${p.name}?`)){
-      peptides = peptides.filter(x=>x.id!==id);
-      save(peptides); renderSchedule(); toast("Deleted");
+  try{
+    const id = btn.getAttribute("data-id");
+    const p = peptides.find(x=>x.id===id);
+    if(!p) return;
+    const act = btn.getAttribute("data-act");
+    if(act==="edit"){ openDialog(p); }
+    else if(act==="dose"){
+      p.last = localISO(today0());
+      save(peptides);
+      renderSchedule();
+      const card = document.querySelector('[data-card="'+id+'"]');
+      if(card){ card.classList.add("flash"); setTimeout(()=>card.classList.remove("flash"),700); }
+      toast("Dose logged today");
+    } else if(act==="del"){
+      if(confirm("Delete "+p.name+"?")){
+        peptides = peptides.filter(x=>x.id!==id);
+        save(peptides); renderSchedule(); toast("Deleted");
+      }
     }
-  }
+  }catch(err){ toast("Error: "+err.message); }
 }
 const pepList = $("pepList");
-pepList.addEventListener("click", e=>{
+pepList.addEventListener("click", function(e){
   const btn = e.target.closest("button[data-act]");
-  if(btn){ e.preventDefault(); handleAction(btn); }
+  if(btn){ handleAction(btn); }
 });
 
 /* ---------- backup / restore ---------- */
@@ -526,6 +533,7 @@ $("tab-schedule").onclick = ()=>switchTab("schedule");
 $("tab-calc").onclick = ()=>switchTab("calc");
 
 /* ---------- init ---------- */
+var vt=$("verTag"); if(vt) vt.textContent=APP_VERSION;
 renderSchedule();
 
 /* ---------- service worker ---------- */
