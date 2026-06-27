@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0e1b14">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,142 +13,165 @@
 <style>
   :root{
     --bg:#0e1b14;
-    --panel:#13261c;
-    --panel-2:#19332571;
-    --line:#244534;
-    --ink:#eaf3ec;
-    --muted:#8fae9d;
+    --panel:#15291e;
+    --panel-2:#1c3727;
+    --line:#264a36;
+    --line-soft:#1f3c2c;
+    --ink:#eef5f0;
+    --muted:#93b3a1;
+    --muted-2:#6f9181;
     --accent:#5fd39a;
+    --accent-2:#6fe0a8;
     --accent-dim:#3a8e69;
-    --warn:#e0b15a;
-    --due:#e07a6b;
-    --radius:14px;
-    --mono:"SFMono-Regular",ui-monospace,"Cascadia Mono","Roboto Mono",Menlo,monospace;
+    --warn:#e6bd6a;
+    --due:#ec8273;
+    --radius:16px;
+    --mono:ui-monospace,"SFMono-Regular","Cascadia Mono","Roboto Mono",Menlo,monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
-  *{box-sizing:border-box}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
     background:
-      radial-gradient(1200px 600px at 80% -10%,#1a3526 0%,transparent 60%),
+      radial-gradient(1100px 560px at 85% -12%,#1d3a29 0%,transparent 58%),
       var(--bg);
+    background-attachment:fixed;
     color:var(--ink);
     font-family:var(--sans);
     -webkit-font-smoothing:antialiased;
     line-height:1.5;
     min-height:100vh;
   }
-  .wrap{max-width:760px;margin:0 auto;padding:22px 18px 80px}
-  header.app{
-    display:flex;align-items:baseline;justify-content:space-between;
-    gap:12px;padding:6px 2px 20px;border-bottom:1px solid var(--line);margin-bottom:22px;
+  .wrap{
+    max-width:640px;margin:0 auto;
+    padding:calc(env(safe-area-inset-top) + 20px) 18px calc(env(safe-area-inset-bottom) + 90px);
   }
-  header.app h1{
-    font-size:23px;letter-spacing:-0.02em;margin:0;font-weight:650;
-  }
-  header.app h1 .dot{color:var(--accent)}
-  header.app .sub{font-size:12px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em}
 
-  .tabs{display:flex;gap:6px;margin-bottom:20px}
-  .tabs button{
-    flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);
-    padding:10px 8px;border-radius:10px;font-size:13px;font-weight:550;cursor:pointer;
-    font-family:var(--sans);transition:.15s;
+  header.app{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;padding:2px 2px 18px;margin-bottom:20px;border-bottom:1px solid var(--line-soft);
   }
-  .tabs button.active{background:var(--panel);color:var(--ink);border-color:var(--accent-dim)}
-  .tabs button:hover:not(.active){color:var(--ink)}
+  header.app h1{font-size:22px;letter-spacing:-0.02em;margin:0;font-weight:680}
+  header.app h1 .dot{color:var(--accent)}
+  header.app .sub{font-size:11px;color:var(--muted-2);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.1em}
+
+  .tabs{display:flex;gap:8px;margin-bottom:22px;background:var(--panel);padding:5px;border-radius:13px;border:1px solid var(--line-soft)}
+  .tabs button{
+    flex:1;background:transparent;border:none;color:var(--muted);
+    padding:10px 8px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;
+    font-family:var(--sans);transition:.18s;
+  }
+  .tabs button.active{background:var(--panel-2);color:var(--ink);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+
+  .toolbar{display:flex;gap:10px;margin-bottom:18px}
+  .toolbar .primary{flex:1}
 
   .card{
-    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-    padding:18px;margin-bottom:16px;
+    background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--radius);
+    padding:20px;margin-bottom:16px;
   }
-  .card h2{margin:0 0 4px;font-size:16px;font-weight:600}
-  .card .hint{color:var(--muted);font-size:12.5px;margin:0 0 16px}
+  .card h2{margin:0 0 5px;font-size:16px;font-weight:650}
+  .card .hint{color:var(--muted);font-size:13px;margin:0 0 18px;line-height:1.5}
 
-  label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px;font-weight:550}
-  .field{margin-bottom:13px}
+  label{display:block;font-size:11.5px;color:var(--muted);margin:0 0 6px;font-weight:600;letter-spacing:.01em}
+  .field{margin-bottom:15px}
   input,select,textarea{
-    width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
-    border-radius:9px;padding:11px 12px;font-size:15px;font-family:var(--sans);
+    width:100%;background:#0f221880;border:1px solid var(--line);color:var(--ink);
+    border-radius:10px;padding:12px 13px;font-size:16px;font-family:var(--sans);
   }
-  input:focus,select,textarea:focus,select:focus{outline:2px solid var(--accent-dim);outline-offset:1px}
-  textarea{resize:vertical;min-height:64px;font-size:14px}
-  .row{display:flex;gap:10px}
-  .row .field{flex:1}
+  input::placeholder,textarea::placeholder{color:var(--muted-2)}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-dim);outline-offset:1px;border-color:transparent}
+  textarea{resize:vertical;min-height:70px;font-size:15px;line-height:1.5}
+  select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2393b3a1' d='M6 8 0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:34px}
+  .row{display:flex;gap:12px}
+  .row .field{flex:1;min-width:0}
   .unit-input{position:relative}
-  .unit-input .u{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;font-family:var(--mono);pointer-events:none}
+  .unit-input .u{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted-2);font-size:12px;font-family:var(--mono);pointer-events:none}
 
   button.primary{
-    background:var(--accent);color:#06140d;border:none;border-radius:10px;
-    padding:12px 16px;font-size:14px;font-weight:650;cursor:pointer;width:100%;
+    background:var(--accent);color:#06140d;border:none;border-radius:11px;
+    padding:13px 16px;font-size:14.5px;font-weight:680;cursor:pointer;width:100%;
     font-family:var(--sans);transition:.15s;
   }
-  button.primary:hover{background:#6fe0a8}
+  button.primary:active{background:var(--accent-2);transform:translateY(1px)}
   button.ghost{
     background:transparent;border:1px solid var(--line);color:var(--muted);
-    border-radius:9px;padding:9px 13px;font-size:13px;cursor:pointer;font-weight:550;
+    border-radius:10px;padding:11px 14px;font-size:13.5px;cursor:pointer;font-weight:600;
+    font-family:var(--sans);transition:.15s;
   }
-  button.ghost:hover{color:var(--ink);border-color:var(--accent-dim)}
+  button.ghost:active{color:var(--ink);border-color:var(--accent-dim);transform:translateY(1px)}
 
   .result{
-    margin-top:16px;background:linear-gradient(180deg,#16382770,#13261c);
-    border:1px solid var(--accent-dim);border-radius:12px;padding:16px;
+    margin-top:18px;background:linear-gradient(180deg,#1a3c2b,#15291e);
+    border:1px solid var(--accent-dim);border-radius:13px;padding:18px;
   }
-  .result .big{font-size:30px;font-weight:700;letter-spacing:-0.02em;color:var(--accent)}
-  .result .big small{font-size:14px;color:var(--muted);font-weight:500;margin-left:6px}
-  .result .line{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-top:1px dashed var(--line);margin-top:8px;color:var(--muted)}
-  .result .line b{color:var(--ink);font-weight:600;font-family:var(--mono)}
-  .result.empty{border-color:var(--line);color:var(--muted);font-size:13px;text-align:center}
+  .result .big{font-size:32px;font-weight:720;letter-spacing:-0.02em;color:var(--accent);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .result .big small{font-size:13px;color:var(--muted);font-weight:600}
+  .result .line{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:7px 0;border-top:1px solid var(--line-soft);margin-top:8px;color:var(--muted)}
+  .result .line:first-of-type{margin-top:14px}
+  .result .line b{color:var(--ink);font-weight:600;font-family:var(--mono);text-align:right}
+  .result.empty{border-color:var(--line-soft);color:var(--muted);font-size:13px;text-align:center;background:#0f2218;padding:22px 18px}
 
   .pep{
-    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-    padding:16px;margin-bottom:13px;
+    background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--radius);
+    padding:18px;margin-bottom:14px;transition:.2s;
   }
-  .pep.due{border-color:var(--due)}
+  .pep.due{border-color:var(--due);box-shadow:0 0 0 1px var(--due) inset}
   .pep.soon{border-color:var(--warn)}
-  .pep-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-  .pep-name{font-size:17px;font-weight:650;margin:0}
-  .pep-meta{font-size:12px;color:var(--muted);margin:2px 0 0;font-family:var(--mono)}
-  .badge{font-size:11px;font-weight:650;padding:4px 9px;border-radius:20px;white-space:nowrap}
-  .badge.due{background:#3a1a16;color:var(--due);border:1px solid var(--due)}
-  .badge.soon{background:#3a3016;color:var(--warn);border:1px solid var(--warn)}
-  .badge.ok{background:#16382a;color:var(--accent);border:1px solid var(--accent-dim)}
+  .pep.flash{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim)}
+  .pep-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px}
+  .pep-name{font-size:18px;font-weight:680;margin:0;letter-spacing:-.01em}
+  .pep-meta{font-size:12.5px;color:var(--muted);margin:3px 0 0}
+  .badge{font-size:11px;font-weight:680;padding:5px 11px;border-radius:20px;white-space:nowrap;letter-spacing:.01em}
+  .badge.due{background:#3a1c18;color:var(--due);border:1px solid var(--due)}
+  .badge.soon{background:#3a3118;color:var(--warn);border:1px solid var(--warn)}
+  .badge.ok{background:#163a2a;color:var(--accent);border:1px solid var(--accent-dim)}
+  .badge.none{background:#22322b;color:var(--muted);border:1px solid var(--line)}
 
-  .pep-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin:14px 0}
-  .pep-grid .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  .pep-grid .v{font-size:14px;font-weight:600;font-family:var(--mono)}
+  .pep-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line-soft)}
+  .pep-grid .k{font-size:10px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .pep-grid .v{font-size:13.5px;font-weight:650;font-family:var(--mono)}
+  .pep-grid .v.accent{color:var(--accent)}
+
   .recipe{
-    background:var(--panel-2);border-radius:9px;padding:11px 12px;margin:12px 0 0;
-    font-size:13px;color:var(--ink);border-left:2px solid var(--accent-dim);white-space:pre-wrap;
+    background:#0f2218;border-radius:10px;padding:13px;margin:14px 0 0;
+    font-size:13px;color:var(--ink);border-left:3px solid var(--accent-dim);white-space:pre-wrap;line-height:1.55;
   }
-  .recipe .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:4px}
-  .pep-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-  .pep-actions button{flex:1;min-width:120px}
+  .recipe .lbl{font-size:10px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px}
 
-  .empty-state{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
-  .empty-state .em{font-size:30px;display:block;margin-bottom:10px}
+  .pep-actions{display:flex;gap:10px;margin-top:16px}
+  .pep-actions .log{flex:1}
+  .pep-actions .icon{flex:0 0 auto;width:46px;padding:11px 0;text-align:center}
+
+  .empty-state{text-align:center;color:var(--muted);padding:52px 20px;font-size:14.5px;line-height:1.6}
+  .empty-state .em{font-size:34px;display:block;margin-bottom:14px;opacity:.7}
 
   dialog{
-    background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;
-    padding:0;max-width:480px;width:calc(100% - 32px);
+    background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px;
+    padding:0;max-width:460px;width:calc(100% - 28px);
   }
-  dialog::backdrop{background:rgba(4,12,8,.7)}
-  .dlg-body{padding:20px}
-  .dlg-body h3{margin:0 0 16px;font-size:17px}
-  .dlg-foot{display:flex;gap:10px;margin-top:6px}
+  dialog::backdrop{background:rgba(4,12,8,.72);backdrop-filter:blur(2px)}
+  .dlg-body{padding:22px}
+  .dlg-body h3{margin:0 0 18px;font-size:18px;font-weight:680}
+  .dlg-foot{display:flex;gap:12px;margin-top:8px}
   .dlg-foot button{flex:1}
 
-  .calc-note{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5}
-  .sec-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin:18px 0 8px}
-  .danger{color:var(--due)!important;border-color:#5a2620!important}
+  .calc-note{font-size:11.5px;color:var(--muted-2);margin-top:14px;line-height:1.55}
+  .danger:active{color:var(--due);border-color:#5a2a24}
+  .footer-tools{display:flex;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--line-soft)}
+  .footer-tools button{flex:1;font-size:12.5px}
+  .toast{
+    position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);
+    background:var(--accent);color:#06140d;font-weight:680;font-size:13.5px;padding:11px 20px;border-radius:24px;
+    opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="app">
-    <div>
-      <h1>Peptide Tracker<span class="dot">.</span></h1>
-    </div>
+    <h1>Peptide Tracker<span class="dot">.</span></h1>
     <div class="sub">Local · Private</div>
   </header>
 
@@ -159,15 +182,22 @@
 
   <!-- SCHEDULE VIEW -->
   <section id="view-schedule">
-    <button class="primary" id="addBtn" style="margin-bottom:16px">+ Add Peptide</button>
+    <div class="toolbar">
+      <button class="primary" id="addBtn">+ Add peptide</button>
+    </div>
     <div id="pepList"></div>
+    <div class="footer-tools" id="footerTools" style="display:none">
+      <button class="ghost" id="exportBtn">Export backup</button>
+      <button class="ghost" id="importBtn">Restore backup</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
   </section>
 
   <!-- CALCULATOR VIEW -->
   <section id="view-calc" style="display:none">
     <div class="card">
       <h2>Reconstitution calculator</h2>
-      <p class="hint">Enter what's in the vial and the dose you want. It tells you how much bacteriostatic water to add so your target dose lands on a clean syringe mark.</p>
+      <p class="hint">Enter what is in the vial and the dose you want. It tells you how much bacteriostatic water to add so your target dose lands on a clean syringe mark.</p>
 
       <div class="field">
         <label>Peptide amount in vial</label>
@@ -179,8 +209,8 @@
           <label>Dose per injection</label>
           <div class="unit-input"><input type="number" id="c_dose" inputmode="decimal" placeholder="e.g. 250"><span class="u" id="doseUnit">mcg</span></div>
         </div>
-        <div class="field" style="flex:0 0 110px">
-          <label>Dose unit</label>
+        <div class="field" style="flex:0 0 96px">
+          <label>Unit</label>
           <select id="c_doseunit">
             <option value="mcg">mcg</option>
             <option value="mg">mg</option>
@@ -189,7 +219,7 @@
       </div>
 
       <div class="field">
-        <label>Target units on syringe (per dose)</label>
+        <label>Target units on syringe per dose</label>
         <div class="unit-input"><input type="number" id="c_units" inputmode="decimal" placeholder="e.g. 25"><span class="u">units</span></div>
       </div>
 
@@ -203,8 +233,8 @@
       </div>
 
       <div class="result empty" id="calcResult">Fill in the fields above to see the water volume.</div>
-      <p class="calc-note">Note: 1 “unit” on a U-100 insulin syringe = 0.01 ml. This tool is a calculation aid only, not medical or dosing advice.</p>
-      <button class="ghost" id="saveRecipeBtn" style="width:100%;margin-top:14px;display:none">Save this as a peptide recipe</button>
+      <p class="calc-note">1 unit on a U-100 insulin syringe equals 0.01 ml. This tool is a calculation aid only, not medical or dosing advice.</p>
+      <button class="primary" id="saveRecipeBtn" style="margin-top:16px;display:none">Save as a peptide</button>
     </div>
   </section>
 </div>
@@ -224,12 +254,12 @@
         <input id="f_dose" placeholder="e.g. 250 mcg">
       </div>
       <div class="field">
-        <label>Injections per week</label>
+        <label>Per week</label>
         <input type="number" id="f_perweek" inputmode="numeric" placeholder="e.g. 7">
       </div>
     </div>
     <div class="field">
-      <label>Mixing recipe (how you reconstitute it)</label>
+      <label>Mixing recipe</label>
       <textarea id="f_recipe" placeholder="e.g. 5 mg vial + 2 ml BAC water = 25 units per 250 mcg dose"></textarea>
     </div>
     <div class="row">
@@ -238,7 +268,7 @@
         <input type="date" id="f_last">
       </div>
       <div class="field">
-        <label>Interval (days between)</label>
+        <label>Interval (days)</label>
         <input type="number" id="f_interval" inputmode="numeric" placeholder="e.g. 1">
       </div>
     </div>
@@ -248,6 +278,8 @@
     </div>
   </div>
 </dialog>
+
+<div class="toast" id="toast"></div>
 
 <script>
 "use strict";
@@ -262,10 +294,14 @@ function load(){
 function save(data){ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
 let peptides = load();
 
-/* ---------- date helpers ---------- */
+/* ---------- date helpers (all local, no UTC drift) ---------- */
 const DAY = 86400000;
 function today0(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
-function parseDate(s){ if(!s) return null; const d=new Date(s+"T00:00:00"); return isNaN(d)?null:d; }
+function localISO(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function parseDate(s){ if(!s) return null; const p=s.split("-"); if(p.length!==3) return null; const d=new Date(+p[0],+p[1]-1,+p[2]); return isNaN(d)?null:d; }
 function fmt(d){ return d ? d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"}) : "—"; }
 function nextDue(p){
   const last = parseDate(p.last);
@@ -275,47 +311,57 @@ function nextDue(p){
 }
 function daysUntil(d){ if(!d) return null; return Math.round((d - today0())/DAY); }
 
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1600);
+}
+
 /* ---------- schedule render ---------- */
 function statusOf(p){
   const du = daysUntil(nextDue(p));
-  if(du===null) return {cls:"",badge:"ok",txt:"Set last dose"};
+  if(du===null) return {cls:"",badge:"none",txt:"No schedule"};
   if(du < 0) return {cls:"due",badge:"due",txt:`Overdue ${-du}d`};
   if(du === 0) return {cls:"due",badge:"due",txt:"Due today"};
-  if(du === 1) return {cls:"soon",badge:"soon",txt:"Due tomorrow"};
-  if(du <= 2) return {cls:"soon",badge:"soon",txt:`Due in ${du}d`};
+  if(du === 1) return {cls:"soon",badge:"soon",txt:"Tomorrow"};
+  if(du <= 2) return {cls:"soon",badge:"soon",txt:`In ${du}d`};
   return {cls:"",badge:"ok",txt:`In ${du}d`};
 }
 
 function renderSchedule(){
   const list = $("pepList");
+  $("footerTools").style.display = peptides.length ? "flex" : "none";
   if(!peptides.length){
-    list.innerHTML = `<div class="empty-state"><span class="em">◎</span>No peptides yet.<br>Add one to start tracking doses and mixes.</div>`;
+    list.innerHTML = `<div class="empty-state"><span class="em">◎</span>No peptides yet.<br>Add one to start tracking doses, schedules and mixes.</div>`;
     return;
   }
   const sorted = [...peptides].sort((a,b)=>{
     const da=daysUntil(nextDue(a)), db=daysUntil(nextDue(b));
+    if(da===null && db===null) return 0;
     if(da===null) return 1; if(db===null) return -1; return da-db;
   });
   list.innerHTML = sorted.map(p=>{
     const st = statusOf(p);
     const nd = nextDue(p);
-    return `<div class="pep ${st.cls}">
+    return `<div class="pep ${st.cls}" data-card="${p.id}">
       <div class="pep-top">
         <div>
           <p class="pep-name">${esc(p.name)}</p>
-          <p class="pep-meta">${esc(p.dose||"—")} · ${p.perweek?esc(p.perweek)+"×/week":"—"}</p>
+          <p class="pep-meta">${esc(p.dose||"No dose set")}${p.perweek?" · "+esc(p.perweek)+"×/week":""}</p>
         </div>
         <span class="badge ${st.badge}">${st.txt}</span>
       </div>
       <div class="pep-grid">
-        <div><div class="k">Last injection</div><div class="v">${fmt(parseDate(p.last))}</div></div>
-        <div><div class="k">Next due</div><div class="v">${fmt(nd)}</div></div>
+        <div><div class="k">Last</div><div class="v">${fmt(parseDate(p.last))}</div></div>
+        <div><div class="k">Next due</div><div class="v ${st.badge==='due'?'accent':''}">${fmt(nd)}</div></div>
+        <div><div class="k">Every</div><div class="v">${p.interval?esc(p.interval)+"d":"—"}</div></div>
       </div>
       ${p.recipe?`<div class="recipe"><span class="lbl">Mix recipe</span>${esc(p.recipe)}</div>`:""}
       <div class="pep-actions">
-        <button class="primary" data-act="dose" data-id="${p.id}">Log dose today</button>
-        <button class="ghost" data-act="edit" data-id="${p.id}">Edit</button>
-        <button class="ghost danger" data-act="del" data-id="${p.id}">Delete</button>
+        <button class="primary log" data-act="dose" data-id="${p.id}">Log dose today</button>
+        <button class="ghost icon" data-act="edit" data-id="${p.id}" aria-label="Edit">✎</button>
+        <button class="ghost icon danger" data-act="del" data-id="${p.id}" aria-label="Delete">🗑</button>
       </div>
     </div>`;
   }).join("");
@@ -353,27 +399,60 @@ $("dlgSave").onclick = ()=>{
   const i = peptides.findIndex(x=>x.id===id);
   if(i>=0) peptides[i]=rec; else peptides.push(rec);
   save(peptides); renderSchedule(); dlg.close();
+  toast(i>=0?"Saved":"Peptide added");
 };
 
-/* ---------- list actions ---------- */
-$("pepList").addEventListener("click", e=>{
-  const btn = e.target.closest("button[data-act]");
-  if(!btn) return;
+/* ---------- list actions (delegated, robust on iOS) ---------- */
+function handleAction(btn){
   const id = btn.dataset.id;
   const p = peptides.find(x=>x.id===id);
   if(!p) return;
-  if(btn.dataset.act==="edit") openDialog(p);
-  else if(btn.dataset.act==="dose"){
-    const d = today0();
-    p.last = d.toISOString().slice(0,10);
-    save(peptides); renderSchedule();
-  } else if(btn.dataset.act==="del"){
+  const act = btn.dataset.act;
+  if(act==="edit"){ openDialog(p); }
+  else if(act==="dose"){
+    p.last = localISO(today0());
+    save(peptides);
+    renderSchedule();
+    const card = document.querySelector(`[data-card="${id}"]`);
+    if(card){ card.classList.add("flash"); setTimeout(()=>card.classList.remove("flash"),700); }
+    toast("Dose logged today");
+  } else if(act==="del"){
     if(confirm(`Delete ${p.name}?`)){
       peptides = peptides.filter(x=>x.id!==id);
-      save(peptides); renderSchedule();
+      save(peptides); renderSchedule(); toast("Deleted");
     }
   }
+}
+const pepList = $("pepList");
+pepList.addEventListener("click", e=>{
+  const btn = e.target.closest("button[data-act]");
+  if(btn){ e.preventDefault(); handleAction(btn); }
 });
+
+/* ---------- backup / restore ---------- */
+$("exportBtn").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(peptides,null,2)],{type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href=url; a.download=`peptide-backup-${localISO(today0())}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast("Backup exported");
+};
+$("importBtn").onclick = ()=>$("importFile").click();
+$("importFile").onchange = e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const data = JSON.parse(r.result);
+      if(Array.isArray(data)){ peptides = data; save(peptides); renderSchedule(); toast("Backup restored"); }
+      else toast("Invalid backup file");
+    }catch(err){ toast("Could not read file"); }
+    $("importFile").value="";
+  };
+  r.readAsText(file);
+};
 
 /* ---------- calculator ---------- */
 function calc(){
@@ -381,7 +460,7 @@ function calc(){
   let dose = parseFloat($("c_dose").value);
   const doseUnit = $("c_doseunit").value;
   const units = parseFloat($("c_units").value);
-  const syr = parseFloat($("c_syringe").value); // units per ml capacity marking (U-100 => 100 units/ml)
+  const syr = parseFloat($("c_syringe").value);
   const box = $("calcResult");
   $("doseUnit").textContent = doseUnit;
 
@@ -391,30 +470,25 @@ function calc(){
     $("saveRecipeBtn").style.display="none";
     return null;
   }
-  // convert dose to mg
   const doseMg = doseUnit==="mcg" ? dose/1000 : dose;
-  // We want: doseMg sits in `units` syringe units.
-  // syringe: 1 unit = 1/100 ml on U-100 (or 1/ (syr*... )). syr value = total units across 1ml.
-  // ml per unit = 1 / syr  (since syr units = 1 ml)
   const mlPerUnit = 1 / syr;
-  const volPerDose = units * mlPerUnit;        // ml drawn per injection
-  // concentration needed: doseMg per volPerDose ml
-  const concNeeded = doseMg / volPerDose;       // mg per ml
-  const waterTotal = mg / concNeeded;           // ml of water to add to whole vial
+  const volPerDose = units * mlPerUnit;
+  const concNeeded = doseMg / volPerDose;
+  const waterTotal = mg / concNeeded;
   const dosesPerVial = mg / doseMg;
 
   if(!(waterTotal>0) || !isFinite(waterTotal)){
     box.className="result empty";
-    box.textContent="Those numbers don't produce a valid volume — check the dose and units.";
+    box.textContent="Those numbers do not produce a valid volume. Check the dose and units.";
     $("saveRecipeBtn").style.display="none";
     return null;
   }
 
   box.className="result";
   box.innerHTML = `
-    <div class="big">${round(waterTotal)} ml<small>BAC water to add</small></div>
-    <div class="line"><span>Draw to</span><b>${round(units)} units (${round(volPerDose,3)} ml)</b></div>
-    <div class="line"><span>Each dose delivers</span><b>${doseUnit==="mcg"?round(dose)+" mcg":round(dose)+" mg"}</b></div>
+    <div class="big">${round(waterTotal)} ml <small>BAC water to add</small></div>
+    <div class="line"><span>Draw to</span><b>${round(units)} units · ${round(volPerDose,3)} ml</b></div>
+    <div class="line"><span>Each dose delivers</span><b>${round(dose)} ${doseUnit}</b></div>
     <div class="line"><span>Concentration</span><b>${round(concNeeded,3)} mg/ml</b></div>
     <div class="line"><span>Doses per vial</span><b>≈ ${round(dosesPerVial,1)}</b></div>
   `;
@@ -431,12 +505,12 @@ function round(n,dp=2){ const f=Math.pow(10,dp); return Math.round(n*f)/f; }
 $("saveRecipeBtn").onclick = ()=>{
   const r = calc();
   if(!r) return;
-  const recipeText = `${r.mg} mg vial + ${r.waterTotal} ml BAC water → draw ${r.units} units (${r.volPerDose} ml) for ${r.dose} ${r.doseUnit}. ${r.concNeeded} mg/ml, ≈${r.dosesPerVial} doses/vial.`;
-  // prefill add dialog
+  const recipeText = `${r.mg} mg vial + ${r.waterTotal} ml BAC water. Draw ${r.units} units (${r.volPerDose} ml) for ${r.dose} ${r.doseUnit}. ${r.concNeeded} mg/ml, approx ${r.dosesPerVial} doses per vial.`;
+  switchTab("schedule");
   openDialog(null);
   $("f_dose").value = `${r.dose} ${r.doseUnit}`;
   $("f_recipe").value = recipeText;
-  $("f_name").focus();
+  setTimeout(()=>$("f_name").focus(),50);
 };
 
 /* ---------- tabs ---------- */
@@ -446,6 +520,7 @@ function switchTab(which){
   $("tab-calc").classList.toggle("active",!sch);
   $("view-schedule").style.display = sch?"block":"none";
   $("view-calc").style.display = sch?"none":"block";
+  window.scrollTo(0,0);
 }
 $("tab-schedule").onclick = ()=>switchTab("schedule");
 $("tab-calc").onclick = ()=>switchTab("calc");
@@ -455,11 +530,8 @@ renderSchedule();
 
 /* ---------- service worker ---------- */
 if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("sw.js").catch(()=>{});
-  });
+  window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
 }
-
 </script>
 </body>
 </html>
