@@ -88,6 +88,13 @@
   .unit-input{position:relative}
   .unit-input .u{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted-2);font-size:12px;font-family:var(--mono);pointer-events:none}
 
+  .weekdays{display:flex;gap:6px;flex-wrap:wrap}
+  .weekdays button{
+    flex:1;min-width:42px;background:#0f221880;border:1px solid var(--line);color:var(--muted);
+    border-radius:9px;padding:10px 4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:.12s;
+  }
+  .weekdays button.on{background:var(--accent);color:#06140d;border-color:var(--accent)}
+
   button.primary{
     background:var(--accent);color:#06140d;border:none;border-radius:11px;
     padding:13px 16px;font-size:14.5px;font-weight:680;cursor:pointer;width:100%;
@@ -248,29 +255,41 @@
       <label>Name</label>
       <input id="f_name" placeholder="e.g. BPC-157">
     </div>
-    <div class="row">
-      <div class="field">
-        <label>Dose per injection</label>
-        <input id="f_dose" placeholder="e.g. 250 mcg">
+    <div class="field">
+      <label>Dose per injection</label>
+      <input id="f_dose" placeholder="e.g. 250 mcg">
+    </div>
+    <div class="field">
+      <label>Frequency</label>
+      <select id="f_freq">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly (pick days)</option>
+        <option value="everyn">Every N days</option>
+      </select>
+    </div>
+    <div class="field" id="weekdayField" style="display:none">
+      <label>Injection days</label>
+      <div class="weekdays" id="weekdayPicker">
+        <button type="button" data-dow="1">Mon</button>
+        <button type="button" data-dow="2">Tue</button>
+        <button type="button" data-dow="3">Wed</button>
+        <button type="button" data-dow="4">Thu</button>
+        <button type="button" data-dow="5">Fri</button>
+        <button type="button" data-dow="6">Sat</button>
+        <button type="button" data-dow="0">Sun</button>
       </div>
-      <div class="field">
-        <label>Per week</label>
-        <input type="number" id="f_perweek" inputmode="numeric" placeholder="e.g. 7">
-      </div>
+    </div>
+    <div class="field" id="intervalField" style="display:none">
+      <label>Inject every (days)</label>
+      <input type="number" id="f_interval" inputmode="numeric" placeholder="e.g. 3">
     </div>
     <div class="field">
       <label>Mixing recipe</label>
       <textarea id="f_recipe" placeholder="e.g. 5 mg vial + 2 ml BAC water = 25 units per 250 mcg dose"></textarea>
     </div>
-    <div class="row">
-      <div class="field">
-        <label>Last injection</label>
-        <input type="date" id="f_last">
-      </div>
-      <div class="field">
-        <label>Interval (days)</label>
-        <input type="number" id="f_interval" inputmode="numeric" placeholder="e.g. 1">
-      </div>
+    <div class="field" id="anchorField" style="display:none">
+      <label>Start date (first injection)</label>
+      <input type="date" id="f_anchor">
     </div>
     <div class="dlg-foot">
       <button class="ghost" id="dlgCancel">Cancel</button>
@@ -287,7 +306,7 @@ window.addEventListener("error", function(e){
   var t=document.getElementById("toast");
   if(t){ t.textContent="JS error: "+(e.message||"unknown"); t.classList.add("show"); }
 });
-const APP_VERSION = "v3";
+const APP_VERSION = "v4";
 const STORE_KEY = "peptideTracker.v1";
 const $ = id => document.getElementById(id);
 
@@ -297,7 +316,7 @@ function load(){
   catch(e){ return []; }
 }
 function save(data){ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
-let peptides = load();
+let peptides = load().map(migrate);
 
 /* ---------- date helpers (all local, no UTC drift) ---------- */
 const DAY = 86400000;
@@ -306,15 +325,76 @@ function localISO(d){
   const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
   return `${y}-${m}-${day}`;
 }
-function parseDate(s){ if(!s) return null; const p=s.split("-"); if(p.length!==3) return null; const d=new Date(+p[0],+p[1]-1,+p[2]); return isNaN(d)?null:d; }
+function parseDate(s){ if(!s) return null; const p=String(s).split("-"); if(p.length!==3) return null; const d=new Date(+p[0],+p[1]-1,+p[2]); d.setHours(0,0,0,0); return isNaN(d)?null:d; }
 function fmt(d){ return d ? d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"}) : "—"; }
-function nextDue(p){
-  const last = parseDate(p.last);
-  const iv = Number(p.interval)||0;
-  if(!last || !iv) return null;
-  return new Date(last.getTime() + iv*DAY);
-}
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); x.setHours(0,0,0,0); return x; }
 function daysUntil(d){ if(!d) return null; return Math.round((d - today0())/DAY); }
+
+/* migrate any old-format record to the new schedule model */
+function migrate(p){
+  if(p.freq) return p; // already new
+  // old model had interval (days) and a last date
+  if(p.interval){
+    p.freq = Number(p.interval)===1 ? "daily" : "everyn";
+    if(p.freq==="everyn") p.everyn = String(p.interval);
+  } else {
+    p.freq = "daily";
+  }
+  p.days = [];                       // weekday list for weekly
+  p.anchor = p.last || localISO(today0()); // start date for everyn
+  p.done = p.last ? [p.last] : [];   // logged dose dates
+  return p;
+}
+
+/* Is a given date a scheduled injection day for peptide p? */
+function isScheduledDay(p, d){
+  if(p.freq==="daily") return true;
+  if(p.freq==="weekly") return (p.days||[]).indexOf(d.getDay())>=0;
+  if(p.freq==="everyn"){
+    const n=Number(p.everyn)||0; if(n<1) return false;
+    const anchor=parseDate(p.anchor); if(!anchor) return false;
+    const diff=Math.round((d-anchor)/DAY);
+    return diff>=0 && diff % n === 0;
+  }
+  return false;
+}
+function hasSchedule(p){
+  if(p.freq==="daily") return true;
+  if(p.freq==="weekly") return (p.days||[]).length>0;
+  if(p.freq==="everyn") return Number(p.everyn)>=1 && !!parseDate(p.anchor);
+  return false;
+}
+function isDone(p, d){ return (p.done||[]).indexOf(localISO(d))>=0; }
+
+/* Most recent scheduled day on/before today that has NOT been logged. */
+function mostRecentOverdue(p){
+  if(!hasSchedule(p)) return null;
+  const start = parseDate(p.anchor) || addDays(today0(),-60);
+  for(let i=0;i<=60;i++){
+    const d=addDays(today0(),-i);
+    if(d<start && p.freq==="everyn") break;
+    if(isScheduledDay(p,d)){
+      if(!isDone(p,d)) return d;     // first unlogged scheduled day going back = overdue/due
+      else return null;             // most recent scheduled day already done -> nothing overdue
+    }
+  }
+  return null;
+}
+/* Next scheduled day strictly after today. */
+function nextScheduled(p){
+  if(!hasSchedule(p)) return null;
+  for(let i=1;i<=370;i++){
+    const d=addDays(today0(),i);
+    if(isScheduledDay(p,d)) return d;
+  }
+  return null;
+}
+/* Next due to show: today if scheduled & not done, else the overdue day, else next scheduled. */
+function nextDue(p){
+  const od=mostRecentOverdue(p);
+  if(od) return od;
+  return nextScheduled(p);
+}
 
 /* ---------- toast ---------- */
 let toastT;
@@ -324,14 +404,29 @@ function toast(msg){
 }
 
 /* ---------- schedule render ---------- */
+function freqLabel(p){
+  if(p.freq==="daily") return "Daily";
+  if(p.freq==="weekly"){
+    const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const ds=(p.days||[]).slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(x=>names[x]);
+    return ds.length?ds.join(", "):"Weekly";
+  }
+  if(p.freq==="everyn") return "Every "+(p.everyn||"?")+" days";
+  return "";
+}
 function statusOf(p){
-  const du = daysUntil(nextDue(p));
-  if(du===null) return {cls:"",badge:"none",txt:"No schedule"};
-  if(du < 0) return {cls:"due",badge:"due",txt:`Overdue ${-du}d`};
-  if(du === 0) return {cls:"due",badge:"due",txt:"Due today"};
-  if(du === 1) return {cls:"soon",badge:"soon",txt:"Tomorrow"};
-  if(du <= 2) return {cls:"soon",badge:"soon",txt:`In ${du}d`};
-  return {cls:"",badge:"ok",txt:`In ${du}d`};
+  if(!hasSchedule(p)) return {cls:"",badge:"none",txt:"No schedule"};
+  const od=mostRecentOverdue(p);
+  if(od){
+    const du=daysUntil(od);
+    if(du===0) return {cls:"due",badge:"due",txt:"Due today"};
+    return {cls:"due",badge:"due",txt:"Overdue"};
+  }
+  const nx=nextScheduled(p);
+  const du=daysUntil(nx);
+  if(du===1) return {cls:"soon",badge:"soon",txt:"Tomorrow"};
+  if(du!==null && du<=2) return {cls:"soon",badge:"soon",txt:`In ${du}d`};
+  return {cls:"",badge:"ok",txt:du!==null?`In ${du}d`:"Scheduled"};
 }
 
 function renderSchedule(){
@@ -348,43 +443,79 @@ function renderSchedule(){
   });
   list.innerHTML = sorted.map(p=>{
     const st = statusOf(p);
-    const nd = nextDue(p);
+    const od = mostRecentOverdue(p);
+    const nx = nextScheduled(p);
+    const showNext = od ? nx : null; // when overdue, also flag the next scheduled day
+    const dueLabel = od ? fmt(od) : fmt(nx);
     return `<div class="pep ${st.cls}" data-card="${p.id}">
       <div class="pep-top">
         <div>
           <p class="pep-name">${esc(p.name)}</p>
-          <p class="pep-meta">${esc(p.dose||"No dose set")}${p.perweek?" · "+esc(p.perweek)+"×/week":""}</p>
+          <p class="pep-meta">${esc(p.dose||"No dose set")}${hasSchedule(p)?" · "+esc(freqLabel(p)):""}</p>
         </div>
         <span class="badge ${st.badge}">${st.txt}</span>
       </div>
       <div class="pep-grid">
-        <div><div class="k">Last</div><div class="v">${fmt(parseDate(p.last))}</div></div>
-        <div><div class="k">Next due</div><div class="v ${st.badge==='due'?'accent':''}">${fmt(nd)}</div></div>
-        <div><div class="k">Every</div><div class="v">${p.interval?esc(p.interval)+"d":"—"}</div></div>
+        <div><div class="k">${od?"Missed/Due":"Next due"}</div><div class="v ${st.badge==='due'?'accent':''}">${dueLabel}</div></div>
+        <div><div class="k">${od?"Then next":"Following"}</div><div class="v">${fmt(showNext || (od?null:nextAfter(p,nx)))}</div></div>
+        <div><div class="k">Schedule</div><div class="v" style="font-size:11.5px">${esc(freqLabel(p))}</div></div>
       </div>
       ${p.recipe?`<div class="recipe"><span class="lbl">Mix recipe</span>${esc(p.recipe)}</div>`:""}
       <div class="pep-actions">
-        <button class="primary log" data-act="dose" data-id="${p.id}">Log dose today</button>
+        <button class="primary log" data-act="dose" data-id="${p.id}">${od?"Mark done":"Log dose today"}</button>
         <button class="ghost icon" data-act="edit" data-id="${p.id}" aria-label="Edit">✎</button>
         <button class="ghost icon danger" data-act="del" data-id="${p.id}" aria-label="Delete">🗑</button>
       </div>
     </div>`;
   }).join("");
 }
+/* the scheduled day after a given date */
+function nextAfter(p, fromDate){
+  if(!fromDate || !hasSchedule(p)) return null;
+  for(let i=1;i<=370;i++){
+    const d=addDays(fromDate,i);
+    if(isScheduledDay(p,d)) return d;
+  }
+  return null;
+}
 
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 /* ---------- dialog ---------- */
 const dlg = $("pepDialog");
+let pickerDays = [];
+
+function updateFreqUI(){
+  const f=$("f_freq").value;
+  $("weekdayField").style.display = f==="weekly" ? "block" : "none";
+  $("intervalField").style.display = f==="everyn" ? "block" : "none";
+  $("anchorField").style.display = f==="everyn" ? "block" : "none";
+}
+$("f_freq").addEventListener("change", updateFreqUI);
+
+$("weekdayPicker").addEventListener("click", function(e){
+  const btn=e.target.closest("button[data-dow]"); if(!btn) return;
+  const dow=Number(btn.getAttribute("data-dow"));
+  const i=pickerDays.indexOf(dow);
+  if(i>=0){ pickerDays.splice(i,1); btn.classList.remove("on"); }
+  else { pickerDays.push(dow); btn.classList.add("on"); }
+});
+
 function openDialog(p){
   $("dlgTitle").textContent = p ? "Edit peptide" : "Add peptide";
   $("f_id").value = p?.id || "";
   $("f_name").value = p?.name || "";
   $("f_dose").value = p?.dose || "";
-  $("f_perweek").value = p?.perweek || "";
   $("f_recipe").value = p?.recipe || "";
-  $("f_last").value = p?.last || "";
-  $("f_interval").value = p?.interval || "";
+  $("f_freq").value = p?.freq || "daily";
+  $("f_interval").value = p?.everyn || "";
+  $("f_anchor").value = p?.anchor || localISO(today0());
+  // weekday picker state
+  pickerDays = p?.days ? p.days.slice() : [];
+  document.querySelectorAll("#weekdayPicker button").forEach(b=>{
+    b.classList.toggle("on", pickerDays.indexOf(Number(b.getAttribute("data-dow")))>=0);
+  });
+  updateFreqUI();
   dlg.showModal();
 }
 $("addBtn").onclick = ()=>openDialog(null);
@@ -392,14 +523,20 @@ $("dlgCancel").onclick = ()=>dlg.close();
 $("dlgSave").onclick = ()=>{
   const name = $("f_name").value.trim();
   if(!name){ $("f_name").focus(); return; }
+  const freq = $("f_freq").value;
+  if(freq==="weekly" && pickerDays.length===0){ toast("Pick at least one day"); return; }
+  if(freq==="everyn" && !(Number($("f_interval").value)>=1)){ toast("Enter days between doses"); return; }
   const id = $("f_id").value || ("p"+Date.now());
+  const existing = peptides.find(x=>x.id===id);
   const rec = {
     id, name,
     dose: $("f_dose").value.trim(),
-    perweek: $("f_perweek").value.trim(),
     recipe: $("f_recipe").value.trim(),
-    last: $("f_last").value,
-    interval: $("f_interval").value.trim()
+    freq,
+    days: freq==="weekly" ? pickerDays.slice() : [],
+    everyn: freq==="everyn" ? $("f_interval").value.trim() : "",
+    anchor: freq==="everyn" ? ($("f_anchor").value||localISO(today0())) : (existing?.anchor||localISO(today0())),
+    done: existing?.done || []
   };
   const i = peptides.findIndex(x=>x.id===id);
   if(i>=0) peptides[i]=rec; else peptides.push(rec);
@@ -416,12 +553,16 @@ function handleAction(btn){
     const act = btn.getAttribute("data-act");
     if(act==="edit"){ openDialog(p); }
     else if(act==="dose"){
-      p.last = localISO(today0());
+      const od = mostRecentOverdue(p);
+      const target = od ? od : today0();
+      const iso = localISO(target);
+      if(!p.done) p.done=[];
+      if(p.done.indexOf(iso)<0) p.done.push(iso);
       save(peptides);
       renderSchedule();
       const card = document.querySelector('[data-card="'+id+'"]');
       if(card){ card.classList.add("flash"); setTimeout(()=>card.classList.remove("flash"),700); }
-      toast("Dose logged today");
+      toast(od ? "Marked "+fmt(target)+" done" : "Dose logged today");
     } else if(act==="del"){
       if(confirm("Delete "+p.name+"?")){
         peptides = peptides.filter(x=>x.id!==id);
